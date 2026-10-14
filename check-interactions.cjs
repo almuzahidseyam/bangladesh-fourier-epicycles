@@ -14,7 +14,7 @@ function harness(reduced=false){
   const presets=[128,1024,4095].map(n=>{const e=element('preset-'+n);e.dataset.harmonics=String(n);return e});
   Object.assign(element('harmonics'),{value:1024,min:2,max:4095});Object.assign(element('speed'),{value:1,min:.25,max:2});
   const document={hidden:false,body:{classList:{toggle(){},add(){},remove(){}}},activeElement:{tagName:'BODY'},getElementById:element,querySelectorAll:()=>presets,createElement:tag=>element('created-'+(++nextId)),addEventListener:(type,fn)=>listeners.set(type,fn)};
-  const sandbox={window:{Fourier,BANGLADESH_BOUNDARY:asset.window.BANGLADESH_BOUNDARY},document,matchMedia:()=>({matches:reduced}),devicePixelRatio:1,ResizeObserver:class{constructor(fn){this.fn=fn}observe(){this.fn()}},requestAnimationFrame:fn=>{const id=++nextId;raf.set(id,fn);return id},cancelAnimationFrame:id=>raf.delete(id),setTimeout:()=>0,clearTimeout(){},URL:{},console};
+  const sandbox={window:{Fourier,DrawingTools:require('./dist/drawing-tools.js'),BANGLADESH_BOUNDARY:asset.window.BANGLADESH_BOUNDARY},document,matchMedia:()=>({matches:reduced}),devicePixelRatio:1,ResizeObserver:class{constructor(fn){this.fn=fn}observe(){this.fn()}},requestAnimationFrame:fn=>{const id=++nextId;raf.set(id,fn);return id},cancelAnimationFrame:id=>raf.delete(id),setTimeout:()=>0,clearTimeout(){},URL:{},console};
   vm.runInNewContext(fs.readFileSync('./dist/app.js','utf8'),sandbox);
   function frame(){const jobs=[...raf.values()];raf.clear();for(const job of jobs)job(now);now+=250}
   function advance(seconds){for(let i=0;i<Math.ceil(seconds*4);i++)frame()}

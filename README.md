@@ -17,6 +17,8 @@ An interactive portrait of Bangladesh in **red, black, white, and purple**, draw
 - Progressive detail doubles N each cycle until 4095.
 - A logarithmic RMS convergence chart and **Find minimum RMS** button.
 - High-resolution PNG export and fullscreen where supported.
+- **SVG export** of the complete curve at the selected N, plus **JSON project export/import** to resume editing.
+- **Image upload** with local silhouette tracing, threshold adjustment, automatic dark/light detection and transparent PNG support.
 - Responsive layout, keyboard controls, and reduced-motion support.
 - A complete mathematics section: X/Y Fourier series, all four coefficient integrals, DC means, radius/phase identity, and live numerical equations.
 
@@ -31,6 +33,20 @@ python -m http.server 4173 --directory dist
 ```
 
 Then open http://localhost:4173. Space toggles playback outside controls; the range inputs support arrow keys and Home / End.
+
+## Bring your own outline
+
+Choose **Upload image** and select a PNG, JPG or WebP (up to 10 MiB and 25 megapixels). Filled silhouettes and high-contrast logos work best. The browser downsamples to at most 510 pixels on the longest side, thresholds luminance or alpha, selects the largest 4-connected foreground component and traces its directed exterior edges. It smooths corners at subpixel scale, centres the contour, scales its longest side to 1 and resamples it to 8,192 equally spaced positions. A worker handles contour extraction where supported; a local fallback uses the same algorithm.
+
+**Edge threshold** and **Shape colour** refine the extracted silhouette. Transparent images use alpha rather than colour. Other significant disconnected parts are counted and omitted. Holes appear as purple reference contours; the Fourier series and RMS describe only the main exterior. This is silhouette tracing rather than semantic object recognition: busy photos, fine disconnected lines and highly textured images need preparation. Contours with excessive edges, holes or vertices are rejected with an explanation. All image and project processing stays on the device; there is no upload service.
+
+**Full outline · SVG** saves the complete selected-N Fourier reconstruction, regardless of animation position. It includes a white background, red curve, purple secondary reference paths, and N/RMS metadata. Changing N changes the exported geometry. SVG is a portable vector illustration, not a project import format.
+
+**Save project · JSON** preserves the source samples, reference rings, N, speed, position and display settings, plus the full reconstruction. **Import JSON** restores the project paused and recomputes coefficients and RMS from its source samples; it does not trust saved result values. The versioned format is `fourier-portrait`, version `1`. Import also accepts a path-only object such as `{"name":"Triangle","path":[{"x":0,"y":0},{"x":100,"y":0},{"x":40,"y":90}]}` or coordinate pairs. Paths must be finite, have nonzero signed area and contain 3–50,000 points. Imported projects are capped at 10 MiB, 8,192 samples and 100,000 reference vertices. These limits keep malformed files from allocating unbounded work.
+
+Use **Bangladesh** to return to the included map. Custom images are kept only in memory; save a JSON project before reloading to keep your outline. Image threshold settings are not part of a saved JSON; the extracted contour is preserved instead. The FFT engine, all-N RMS study and separated X/Y epicycles work with custom outlines too.
+
+The contour and interchange implementations are original and dependency-free. No code from DrawingWithFourier is included.
 
 ## How many harmonics can be used?
 
@@ -74,9 +90,10 @@ The layout calculates an envelope containing every circle, over the entire cycle
 python prepare-boundary.py
 node check-math.cjs
 node check-interactions.cjs
+node check-drawing-tools.cjs
 ```
 
-The checks verify known signals, FFT/direct-series agreement, Nyquist protection, periodic closure, every tested RMS value's monotonicity, independent midpoint error, circle separation at off-grid phases, manual and power-notation input, invalid-input rejection, reduced motion, progressive detail, scrubbing, and pause/restart behavior. The numerical check regenerates `rms-analysis.json`.
+The checks verify known signals, FFT/direct-series agreement, Nyquist protection, periodic closure, every tested RMS value's monotonicity, independent midpoint error, circle separation at off-grid phases, manual and power-notation input, invalid-input rejection, reduced motion, progressive detail, scrubbing, and pause/restart behavior. Contour tests cover edge order, holes, disconnected parts, alpha and inverted colours. Interchange tests cover JSON round trips, rejected malformed projects, legacy paths, actual selected-N SVG geometry and XML escaping. The numerical check regenerates `rms-analysis.json`. Optional `node check-drawing-tools.cjs --fixtures` writes reproducible PNG/JSON fixtures to the system temporary directory for browser testing.
 
 ## Files
 
@@ -85,6 +102,9 @@ The checks verify known signals, FFT/direct-series agreement, Nyquist protection
 - `prepare-boundary.py`: standard-library asset and independent validation sample generator.
 - `check-math.cjs`: numerical and layout verification.
 - `check-interactions.cjs`: animation/control regression checks with a simulated clock.
+- `dist/drawing-tools.js`: silhouette tracing, input validation, portable SVG/JSON formats.
+- `dist/contour-worker.js`: off-thread contour extraction.
+- `check-drawing-tools.cjs`: contour, interchange and export regression checks.
 - `validation-samples.json`: independent midpoint reference positions.
 - `rms-analysis.json`: exhaustive convergence report.
 
