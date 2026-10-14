@@ -35,7 +35,11 @@
       const a=2*re[k]/n,b=-2*im[k]/n;
       terms.push({frequency:k,a,b,amplitude:Math.hypot(a,b),phase:Math.atan2(-b,a)});
     }
-    return {dc,variance,terms,sampleCount:n};
+    // Sum the omitted spectrum directly; subtracting captured energy from
+    // variance loses precision near a complete reconstruction.
+    let tailEnergy=(re[n/2]/n)**2;
+    for(let k=maxFrequency+1;k<n/2;k++)tailEnergy+=2*(re[k]**2+im[k]**2)/(n*n);
+    return {dc,variance,terms,tailEnergy,sampleCount:n};
   }
   function evaluate(series,t,count){
     let value=series.dc;
@@ -56,10 +60,10 @@
   }
   function errorCurve(x,y){
     const energy=x.variance+y.variance,curve=[];
-    let residual=energy;
-    for(let i=0;i<Math.min(x.terms.length,y.terms.length);i++){
-      residual-=(x.terms[i].amplitude**2+y.terms[i].amplitude**2)/2;
-      curve.push({count:i+1,rms:Math.sqrt(Math.max(0,residual)/energy)*100});
+    let residual=x.tailEnergy+y.tailEnergy;
+    for(let i=Math.min(x.terms.length,y.terms.length)-1;i>=0;i--){
+      curve[i]={count:i+1,rms:Math.sqrt(residual/energy)*100};
+      residual+=(x.terms[i].amplitude**2+y.terms[i].amplitude**2)/2;
     }
     return curve;
   }

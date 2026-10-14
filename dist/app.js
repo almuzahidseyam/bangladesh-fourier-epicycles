@@ -3,7 +3,7 @@
   const $=id=>document.getElementById(id);
   const canvas=$('drawing'),ctx=canvas.getContext('2d');
   const {TAU,transform,evaluate,reconstruct,errorCurve,scene}=window.Fourier;
-  const boundary=window.BANGLADESH_BOUNDARY,MAX_N=1024,TRACE_SAMPLES=16384,CYCLE_SECONDS=28;
+  const boundary=window.BANGLADESH_BOUNDARY,MAX_N=boundary.samples.length/2-1,TRACE_SAMPLES=16384,CYCLE_SECONDS=28;
   const xSeries=transform(boundary.samples,0,MAX_N),ySeries=transform(boundary.samples,1,MAX_N);
   const errors=errorCurve(xSeries,ySeries);
   const best=errors.slice(1).reduce((a,b)=>b.rms<a.rms?b:a);
@@ -11,10 +11,10 @@
   const state={count:1024,speed:1,playing:!reduced,progress:reduced?1:0,cycle:1,circles:true,guide:true,progressive:false};
   const traceLayer=document.createElement('canvas'),traceCtx=traceLayer.getContext('2d');
   let width=0,height=0,dpr=1,lastTime=0,lastUi=0,holdTime=0,toastTimer,traceX,traceY,geometry,view,painted=0,rebuildPending=0;
-  const hues=[155,178,200,235,270,310,340,22,48,100,155];
-  const colorAt=progress=>{const p=progress*(hues.length-1),i=Math.min(hues.length-2,Math.floor(p));return `hsl(${hues[i]+(hues[i+1]-hues[i])*(p-i)},90%,69%)`};
-  function formatError(value){return value.toFixed(value<.1?6:value<1?4:3)+'%'}
-  function updateRange(input){const p=(input.value-input.min)/(input.max-input.min)*100;input.style.background=`linear-gradient(to right,#a8dab6 ${p}%,#344c3a ${p}%)`}
+  const tones=[[24,88,71],[36,108,85],[96,123,83],[158,120,58],[24,88,71]];
+  const colorAt=progress=>{const p=progress*(tones.length-1),i=Math.min(tones.length-2,Math.floor(p)),t=p-i;return `rgb(${tones[i].map((v,j)=>Math.round(v+(tones[i+1][j]-v)*t)).join(',')})`};
+  function formatError(value){return value.toFixed(value<.001?8:value<.1?6:value<1?4:3)+'%'}
+  function updateRange(input){const p=(input.value-input.min)/(input.max-input.min)*100;input.style.background=`linear-gradient(to right,#216957 ${p}%,#d0c7b6 ${p}%)`}
   function rebuild(){
     traceX=reconstruct(xSeries,state.count,TRACE_SAMPLES);traceY=reconstruct(ySeries,state.count,TRACE_SAMPLES);
     const bounds={minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};
@@ -23,6 +23,7 @@
     geometry=scene(bounds,xSeries,ySeries,state.count);geometry.bounds=bounds;
     $('error-value').textContent=formatError(errors[state.count-1].rms);
     $('harmonic-value').textContent=state.count;$('harmonics').value=state.count;
+    $('n-value').value=state.count;$('n-value').setAttribute('aria-invalid','false');$('n-error').textContent='';$('n-error').hidden=true;
     $('harmonics').setAttribute('aria-valuetext',state.count+' harmonics per axis');
     $('detail-label').textContent=state.count<32?'Abstract':state.count<256?'Detailed':state.count<768?'Fine detail':'Ultra detail';
     document.querySelectorAll('[data-harmonics]').forEach(button=>{const active=Number(button.dataset.harmonics)===state.count;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active))});
@@ -47,10 +48,10 @@
       const q=series.terms[i],angle=q.frequency*t+q.phase,cos=Math.cos(angle),sin=Math.sin(angle);
       const nx=x+q.amplitude*(cos*cosRot-sin*sinRot),ny=y+q.amplitude*(sin*cosRot+cos*sinRot);
       const radius=q.amplitude*view.scale;
-      if(radius>.22){const p=project(x,y),end=project(nx,ny);ctx.beginPath();ctx.arc(...p,radius,0,TAU);ctx.strokeStyle=color==='mint'?'#65d9d638':'#eab96a38';ctx.lineWidth=.65;ctx.stroke();line(ctx,p,end,color==='mint'?'#65d9d6a8':'#eab96aa8',.8)}
+      if(radius>.22){const p=project(x,y),end=project(nx,ny);ctx.beginPath();ctx.arc(...p,radius,0,TAU);ctx.strokeStyle=color==='mint'?'#21695742':'#a27a3f4d';ctx.lineWidth=.75;ctx.stroke();line(ctx,p,end,color==='mint'?'#216957b8':'#956b32bd',.9)}
       x=nx;y=ny;
     }
-    const end=project(x,y);dot(...end,2.3,color==='mint'?'#71efdc':'#ffd587',7);return end;
+    const end=project(x,y);dot(...end,2.3,color==='mint'?'#216957':'#a27a3f',2);return end;
   }
   function paintTrace(){
     const target=Math.floor(state.progress*TRACE_SAMPLES);
@@ -61,35 +62,35 @@
       const end=Math.min(target,painted+64),color=colorAt((painted+end)/2/TRACE_SAMPLES);
       traceCtx.beginPath();traceCtx.moveTo(...project(traceX[painted%TRACE_SAMPLES],traceY[painted%TRACE_SAMPLES]));
       for(let i=painted+1;i<=end;i++)traceCtx.lineTo(...project(traceX[i%TRACE_SAMPLES],traceY[i%TRACE_SAMPLES]));
-      traceCtx.strokeStyle=color;traceCtx.lineWidth=1.65;traceCtx.shadowColor=color;traceCtx.shadowBlur=8;traceCtx.stroke();traceCtx.shadowBlur=0;painted=end;
+      traceCtx.strokeStyle=color;traceCtx.lineWidth=1.8;traceCtx.shadowColor=color;traceCtx.shadowBlur=1.5;traceCtx.stroke();traceCtx.shadowBlur=0;painted=end;
     }
   }
   function draw(){
     if(!width||!view)return;
-    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#09120f';ctx.fillRect(0,0,width,height);
-    ctx.strokeStyle='#1a2c223b';ctx.lineWidth=.5;
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#fbf8f0';ctx.fillRect(0,0,width,height);
+    ctx.strokeStyle='#a6af9b55';ctx.lineWidth=.5;
     for(let x=21;x<width;x+=35)for(let y=18;y<height;y+=35){ctx.beginPath();ctx.moveTo(x-1.1,y);ctx.lineTo(x+1.1,y);ctx.moveTo(x,y-1.1);ctx.lineTo(x,y+1.1);ctx.stroke()}
     const t=state.progress*TAU,tip=project(evaluate(xSeries,t,state.count),evaluate(ySeries,t,state.count));
     const mapTop=project(geometry.bounds.minX,geometry.bounds.minY),mapBottom=project(geometry.bounds.maxX,geometry.bounds.maxY);
     if(state.guide){
-      const fill=ctx.createLinearGradient(mapTop[0],mapTop[1],mapBottom[0],mapBottom[1]);fill.addColorStop(0,'#0d766319');fill.addColorStop(.45,'#353f8e19');fill.addColorStop(1,'#b5556512');
-      ctx.beginPath();for(const ring of boundary.rings){ring.forEach(([x,y],i)=>{const q=project(x,y);i?ctx.lineTo(...q):ctx.moveTo(...q)});ctx.closePath()}ctx.fillStyle=fill;ctx.fill('evenodd');ctx.strokeStyle='#9ec8b34d';ctx.lineWidth=.65;ctx.stroke();
+      const fill=ctx.createLinearGradient(mapTop[0],mapTop[1],mapBottom[0],mapBottom[1]);fill.addColorStop(0,'#2169570c');fill.addColorStop(.45,'#4979560a');fill.addColorStop(1,'#a27a3f0e');
+      ctx.beginPath();for(const ring of boundary.rings){ring.forEach(([x,y],i)=>{const q=project(x,y);i?ctx.lineTo(...q):ctx.moveTo(...q)});ctx.closePath()}ctx.fillStyle=fill;ctx.fill('evenodd');ctx.strokeStyle='#6d8b7666';ctx.lineWidth=.65;ctx.stroke();
     }
     // Offshore islands are reference geometry, revealed in colour alongside the mainland.
     boundary.rings.slice(1).forEach((ring,index)=>{const end=Math.floor((ring.length-1)*state.progress);if(end<1)return;ctx.beginPath();for(let i=0;i<=end;i++){const p=project(...ring[i]);i?ctx.lineTo(...p):ctx.moveTo(...p)}ctx.strokeStyle=colorAt((index+1)/boundary.rings.length);ctx.lineWidth=1.15;ctx.stroke()});
     if(state.circles){
       const xa=project(...geometry.xAnchor),ya=project(...geometry.yAnchor);
-      line(ctx,[project(geometry.minX,0)[0],xa[1]],[width-15,xa[1]],'#eab96a45',.7);
-      line(ctx,[ya[0],15],[ya[0],height-15],'#65d9d645',.7);
-      ctx.font='8px "IBM Plex Mono",monospace';ctx.fillStyle='#eacb8d';ctx.fillText('X AXIS →',Math.min(width-80,Math.max(15,xa[0]+geometry.rx*view.scale+8)),xa[1]-9);
-      ctx.fillStyle='#83e4d8';ctx.fillText('Y AXIS ↕',Math.max(15,ya[0]-30),18);
+      line(ctx,[project(geometry.minX,0)[0],xa[1]],[width-15,xa[1]],'#a27a3f66',.7);
+      line(ctx,[ya[0],15],[ya[0],height-15],'#21695766',.7);
+      ctx.font='8px "IBM Plex Mono",monospace';ctx.fillStyle='#805b2a';ctx.fillText('X AXIS →',Math.min(width-80,Math.max(15,xa[0]+geometry.rx*view.scale+8)),xa[1]-9);
+      ctx.fillStyle='#216957';ctx.fillText('Y AXIS ↕',Math.max(15,ya[0]-30),18);
       const xEnd=epicycles(xSeries,geometry.xAnchor,0,t,'gold'),yEnd=epicycles(ySeries,geometry.yAnchor,Math.PI/2,t,'mint');
-      line(ctx,xEnd,tip,'#eab96a75',.8,[3,5]);line(ctx,yEnd,tip,'#65d9d675',.8,[3,5]);
-      dot(...xa,1.5,'#ffd58788');dot(...ya,1.5,'#71efdc88');
+      line(ctx,xEnd,tip,'#a27a3f88',.8,[3,5]);line(ctx,yEnd,tip,'#21695788',.8,[3,5]);
+      dot(...xa,1.5,'#a27a3f');dot(...ya,1.5,'#216957');
     }
     paintTrace();ctx.drawImage(traceLayer,0,0,width,height);
-    if(state.progress>0)dot(...tip,2.8,colorAt(state.progress),12);
-    ctx.font='italic 12px Georgia';ctx.fillStyle='#a5b7a2';ctx.fillText('বাংলাদেশ',Math.max(15,mapBottom[0]-55),Math.min(height-10,mapBottom[1]+18));
+    if(state.progress>0)dot(...tip,2.8,colorAt(state.progress),3);
+    ctx.font='italic 12px Georgia';ctx.fillStyle='#586a58';ctx.fillText('বাংলাদেশ',Math.max(15,mapBottom[0]-55),Math.min(height-10,mapBottom[1]+18));
   }
   function updateUi(){
     $('completion-value').textContent=Math.floor(state.progress*100)+'%';$('timeline').value=state.progress*100;$('timeline').setAttribute('aria-valuetext',Math.floor(state.progress*100)+'% of cycle drawn');
@@ -106,10 +107,21 @@
     requestAnimationFrame(frame);
   }
   function setHarmonics(value){state.count=Math.max(2,Math.min(MAX_N,Number(value)));holdTime=0;rebuild();updateUi();draw()}
-  function chartX(count){return 8+Math.log2(count)/10*214}
+  $('n-form').addEventListener('submit',event=>{
+    event.preventDefault();
+    const raw=String($('n-value').value).trim().replaceAll(',','');
+    const power=raw.match(/^(\d+)\s*\^\s*(\d+)$/);
+    const value=power?Number(power[1])**Number(power[2]):/^\d+$/.test(raw)?Number(raw):NaN;
+    if(!Number.isSafeInteger(value)||value<2||value>MAX_N){
+      $('n-error').textContent=`Enter a whole number from 2 to ${MAX_N.toLocaleString()}. This boundary has 8,192 samples.`;
+      $('n-error').hidden=false;$('n-value').setAttribute('aria-invalid','true');return;
+    }
+    setHarmonics(value);
+  });
+  function chartX(count){return 8+Math.log2(count)/Math.log2(MAX_N)*214}
   function chartY(rms){return 7+(Math.log10(errors[1].rms)-Math.log10(Math.max(rms,1e-12)))/(Math.log10(errors[1].rms)-Math.log10(best.rms))*61}
   $('rms-line').setAttribute('d',errors.slice(1).map((p,i)=>`${i?'L':'M'}${chartX(p.count).toFixed(2)},${chartY(p.rms).toFixed(2)}`).join(' '));
-  $('minimum-note').textContent=`Lowest in N=2–1024: ${formatError(best.rms)} at N=${best.count}.`;
+  $('minimum-note').textContent=`Lowest in N=2–${MAX_N}: ${formatError(best.rms)} at N=${best.count}.`;
   $('minimum').addEventListener('click',()=>{setHarmonics(best.count);toast(`Minimum measured RMS: ${formatError(best.rms)} at N=${best.count}`)});
   $('harmonics').addEventListener('input',e=>{const n=e.target.value;cancelAnimationFrame(rebuildPending);rebuildPending=requestAnimationFrame(()=>setHarmonics(n))});
   document.querySelectorAll('[data-harmonics]').forEach(button=>button.addEventListener('click',()=>setHarmonics(button.dataset.harmonics)));
@@ -129,7 +141,7 @@
   $('save').addEventListener('click',()=>{
     // Render at export resolution instead of enlarging the screen's bitmap.
     const original={width,height,dpr};width=1800;height=1300;dpr=1;canvas.width=width;canvas.height=height;resetTrace();draw();
-    const image=document.createElement('canvas');image.width=1800;image.height=1530;const c=image.getContext('2d');c.fillStyle='#09120f';c.fillRect(0,0,1800,1530);c.fillStyle='#e9eee4';c.font='64px Georgia';c.fillText('Bangladesh.',70,85);c.fillStyle='#a0afa3';c.font='20px sans-serif';c.fillText('A Fourier Portrait · '+state.count+' harmonics per axis',73,125);c.drawImage(canvas,0,150);c.fillStyle='#a8dab6';c.font='18px monospace';c.fillText(formatError(errors[state.count-1].rms)+' normalized RMS  ·  Boundary: Natural Earth / Public domain',70,1490);
+    const image=document.createElement('canvas');image.width=1800;image.height=1530;const c=image.getContext('2d');c.fillStyle='#fbf8f0';c.fillRect(0,0,1800,1530);c.fillStyle='#173f37';c.font='64px Georgia';c.fillText('Bangladesh.',70,85);c.fillStyle='#6c7168';c.font='20px sans-serif';c.fillText('A Fourier Portrait · '+state.count+' harmonics per axis',73,125);c.drawImage(canvas,0,150);c.fillStyle='#216957';c.font='18px monospace';c.fillText(formatError(errors[state.count-1].rms)+' normalized RMS  ·  Boundary: Natural Earth / Public domain',70,1490);
     width=original.width;height=original.height;dpr=original.dpr;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);resetTrace();draw();
     image.toBlob(blob=>{if(!blob){toast('Could not save the image. Please try again.');return}const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='bangladesh-fourier-'+state.count+'.png';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Your moment has been saved.')},'image/png');
   });

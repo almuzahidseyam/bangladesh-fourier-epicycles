@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0b1210">
+  <meta name="theme-color" content="#f5f1e8">
   <meta name="description" content="A mathematical portrait of Bangladesh. Watch rotating Fourier epicycles trace the outline of a homeland.">
   <title>Bangladesh — A Fourier Portrait</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%23006348'/%3E%3Ccircle cx='29' cy='32' r='17' fill='%23f42a41'/%3E%3C/svg%3E">
@@ -33,12 +33,14 @@
       <aside class="controls" aria-label="Drawing controls">
         <div class="control-heading"><span class="eyebrow">THE COMPOSITION</span><span class="tiny-cross">+</span></div>
         <div class="harmonic-display"><span id="harmonic-value">1024</span><span class="harmonic-unit">harmonics<br><span>per axis</span></span></div>
+        <form id="n-form" class="n-form" novalidate><label for="n-value">N =</label><input id="n-value" type="text" inputmode="numeric" value="1024" autocomplete="off" aria-describedby="n-hint n-error" aria-label="Harmonic count N"><button type="submit">Apply ↗</button></form>
+        <p id="n-hint" class="n-hint">Type a number or power, e.g. 512 or 2^10. Range: 2–4095.</p><p id="n-error" class="n-error" role="alert" hidden></p>
         <label class="range-label" for="harmonics">Detail <span id="detail-label">Ultra detail</span></label>
-        <input type="range" id="harmonics" min="2" max="1024" value="1024" aria-describedby="harmonics-help">
-        <div class="range-ends"><span>2 · ABSTRACT</span><span>1024 · ULTRA</span></div>
-        <div class="presets" aria-label="Detail presets"><button data-harmonics="128">128</button><button data-harmonics="512">512</button><button data-harmonics="1024">1024</button></div>
+        <input type="range" id="harmonics" min="2" max="4095" value="1024" aria-describedby="harmonics-help">
+        <div class="range-ends"><span>2 · ABSTRACT</span><span>4095 · LIMIT</span></div>
+        <div class="presets" aria-label="Detail presets"><button data-harmonics="128">128</button><button data-harmonics="1024">1024</button><button data-harmonics="4095">4095</button></div>
         <p class="control-hint" id="harmonics-help">More circles reveal finer coastal details.<br>Hide epicycles to enlarge the map.</p>
-        <div class="rms-study"><div class="range-label">RMS convergence <span>2 → 1024</span></div><svg id="rms-chart" viewBox="0 0 230 77" role="img" aria-label="Normalized RMS error decreases as harmonics increase from 2 to 1024; both axes are logarithmic."><path d="M8 7V68H222" fill="none" stroke="#344c3a"/><path id="rms-line" fill="none" stroke="#85e0d0" stroke-width="1.5"/><circle id="rms-marker" cx="8" cy="7" r="3.5" fill="#ffd587"/></svg><button id="minimum" class="minimum-button">Find minimum RMS <span>↘</span></button><p id="minimum-note" class="control-hint"></p></div>
+        <div class="rms-study"><div class="range-label">RMS convergence <span>2 → 4095</span></div><svg id="rms-chart" viewBox="0 0 230 77" role="img" aria-label="Normalized RMS error decreases as harmonics increase from 2 to 4095; both axes are logarithmic."><path d="M8 7V68H222" fill="none" stroke="#d0c7b6"/><path id="rms-line" fill="none" stroke="#216957" stroke-width="1.5"/><circle id="rms-marker" cx="8" cy="7" r="3.5" fill="#a27a3f"/></svg><button id="minimum" class="minimum-button">Find minimum RMS <span>↘</span></button><p id="minimum-note" class="control-hint"></p></div>
         <div class="divider"></div>
         <label class="range-label" for="speed">Motion <output id="speed-value" for="speed">1×</output></label>
         <input type="range" id="speed" min="0.25" max="2" step="0.25" value="1">

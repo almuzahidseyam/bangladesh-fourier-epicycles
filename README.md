@@ -1,6 +1,6 @@
 # Bangladesh — A Fourier Portrait
 
-A colourful, interactive portrait of Bangladesh drawn with actual Fourier epicycles. The horizontal coordinate comes from the **X circles on the bottom axis**; the vertical coordinate comes from the **Y circles on the left axis**. Their projected endpoints meet on the map. The circles stay outside the map throughout their rotations.
+An interactive portrait of Bangladesh in **ivory, deep emerald, and bronze**, drawn with actual Fourier epicycles. The horizontal coordinate comes from the **X circles on the bottom axis**; the vertical coordinate comes from the **Y circles on the left axis**. Their projected endpoints meet on the map. The circles stay outside the map throughout their rotations.
 
 **[Live demo](https://almuzahidseyam.github.io/bangladesh-fourier-epicycles/)** · **[RMS analysis](rms-analysis.json)**
 
@@ -8,12 +8,13 @@ A colourful, interactive portrait of Bangladesh drawn with actual Fourier epicyc
 
 ## Explore
 
-- **N = 2–1024** harmonics per axis; default N=1024, with 128 / 512 / 1024 presets.
-- A luminous spectrum follows the mainland border; coastal islands reveal themselves alongside it.
+- **N = 2–4095** harmonics per axis; default N=1024, with 128 / 1024 / 4095 presets.
+- Enter N directly and press **Apply** or **Enter**. Whole numbers and powers such as `2^10` are accepted. Invalid values show an explanation and leave the applied N unchanged.
+- A restrained emerald, moss, and bronze line follows the mainland border on warm ivory; coastal islands reveal themselves alongside it.
 - X and Y epicycles occupy separate axes with a guaranteed gap from the map.
 - **Focus on map** enlarges the border without the circles. Switch back with **Show axes**.
 - Play / pause, restart, 0.25×–2× speed, and a timeline to inspect any position.
-- Progressive detail doubles N each cycle until 1024.
+- Progressive detail doubles N each cycle until 4095.
 - A logarithmic RMS convergence chart and **Find minimum RMS** button.
 - High-resolution PNG export and fullscreen where supported.
 - Responsive layout, keyboard controls, and reduced-motion support.
@@ -30,9 +31,9 @@ python -m http.server 4173 --directory dist
 
 Then open http://localhost:4173. Space toggles playback outside controls; the range inputs support arrow keys and Home / End.
 
-## What N=1024 actually means
+## How many harmonics can be used?
 
-The detailed **Natural Earth 1:10m v5.1.2** Bangladesh geometry has 2,280 exterior vertices across 22 polygons. The largest polygon is the mainland. Its exterior is projected locally, centered, and sampled at **8,192 equal arc-length positions**, safely above the minimum required for 1,024 distinct positive frequencies. A radix-2 FFT creates the coefficients of each real coordinate series:
+The detailed **Natural Earth 1:10m v5.1.2** Bangladesh geometry has 2,280 exterior vertices across 22 polygons. The largest polygon is the mainland. Its exterior is projected locally, centered, and sampled at **8,192 equal arc-length positions**. This implementation uses the **4,095 ordinary positive frequencies strictly below Nyquist**; the Nyquist bin remains in the residual. A radix-2 FFT creates the coefficients of each real coordinate series:
 
 ```text
 f(t) = a₀ + Σ [aₖ cos(kt) + bₖ sin(kt)]
@@ -40,9 +41,11 @@ f(t) = a₀ + Σ [aₖ cos(kt) + bₖ sin(kt)]
 
 An inverse FFT reconstructs **16,384 positions per cycle**, so high-frequency detail is retained in the rendered line. Tiny circles can fall below a screen pixel and are omitted visually; every selected coefficient still contributes to the position. Offshore islands are coloured reference outlines, not part of the mainland's Fourier error metric.
 
+`2^32` is **4,294,967,296 harmonics**, not 32. It is outside the available spectrum and is not practical to compute and animate in this browser app. A standard sampled real series with that many ordinary positive frequencies needs more than 8.59 billion samples. The input rejects this value explicitly instead of pretending to render it or silently substituting a smaller N.
+
 ## RMS study
 
-Every integer **N=2…1024** was evaluated. Error is the root-mean-square Euclidean reconstruction distance divided by the mainland samples' RMS radius about their centroid, expressed as a percentage. Parseval's theorem gives the same residual as direct reconstruction; the checks compare both methods. More orthogonal frequencies reduce this sampled RMS monotonically.
+Every integer **N=2…4095** was evaluated. Error is the root-mean-square Euclidean reconstruction distance divided by the mainland samples' RMS radius about their centroid, expressed as a percentage. Parseval's theorem gives the same residual as direct reconstruction; the checks compare both methods. Omitted spectral energy is summed directly, avoiding cancellation when error is very small. More orthogonal frequencies reduce this sampled RMS monotonically.
 
 | Harmonics per axis | Sampled normalized RMS | Independent midpoint RMS |
 | ---: | ---: | ---: |
@@ -50,9 +53,11 @@ Every integer **N=2…1024** was evaluated. Error is the root-mean-square Euclid
 | 256 | 0.300928% | 0.300955% |
 | 512 | 0.105006% | 0.105053% |
 | 768 | 0.052810% | 0.052981% |
-| **1024** | **0.031998%** | **0.032293%** |
+| 1024 | 0.031998% | 0.032293% |
+| 2048 | 0.011298% | 0.012364% |
+| **4095** | **0.00004898%** | **0.008273%** |
 
-**N=1024 is the minimum within the tested range.** It does not produce exact zero error. The independent validation uses another 8,192 points halfway between the training positions on the original source polyline. This measures reconstruction of this boundary dataset, not real-world geographic accuracy. The complete 1,023-value convergence curve and validation results are in [`rms-analysis.json`](rms-analysis.json).
+**N=4095 is the sampled minimum within the tested range.** It does not produce exact zero error. The independent validation uses another 8,192 points halfway between the training positions on the original source polyline. Near-zero training error does not imply near-zero error between samples. This measures reconstruction of this boundary dataset, not real-world geographic accuracy. The complete 4,094-value convergence curve and validation results are in [`rms-analysis.json`](rms-analysis.json).
 
 ## Why circles cannot enter the map
 
@@ -66,7 +71,7 @@ node check-math.cjs
 node check-interactions.cjs
 ```
 
-The checks verify known signals, FFT/direct-series agreement, Nyquist protection, periodic closure, every tested RMS value's monotonicity, independent midpoint error, circle separation at off-grid phases, reduced motion, progressive detail, scrubbing, and pause/restart behavior. The numerical check regenerates `rms-analysis.json`.
+The checks verify known signals, FFT/direct-series agreement, Nyquist protection, periodic closure, every tested RMS value's monotonicity, independent midpoint error, circle separation at off-grid phases, manual and power-notation input, invalid-input rejection, reduced motion, progressive detail, scrubbing, and pause/restart behavior. The numerical check regenerates `rms-analysis.json`.
 
 ## Files
 

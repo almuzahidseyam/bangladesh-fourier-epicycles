@@ -13,11 +13,11 @@ for(let i=0;i<known.length;i++){
 const box={window:{}};vm.runInNewContext(fs.readFileSync('./dist/boundary.js','utf8'),box);
 const data=box.window.BANGLADESH_BOUNDARY,samples=data.samples;
 assert.equal(samples.length,8192);assert.ok(samples.every(p=>p.every(Number.isFinite)));
-const x=transform(samples,0),y=transform(samples,1),curve=errorCurve(x,y);
+const x=transform(samples,0,4095),y=transform(samples,1,4095),curve=errorCurve(x,y);
 for(let i=2;i<curve.length;i++)assert.ok(curve[i].rms<=curve[i-1].rms,'Additional orthogonal frequencies must not increase sampled RMS');
 const reference=JSON.parse(fs.readFileSync('./validation-samples.json','utf8'));
 const comparisons=[];
-for(const count of [2,8,32,128,256,512,768,1024]){
+for(const count of [2,8,32,128,256,512,768,1024,2048,4095]){
   const rx=reconstruct(x,count,8192),ry=reconstruct(y,count,8192);
   let squared=0,radius=0;
   for(let i=0;i<samples.length;i++){
@@ -59,7 +59,7 @@ for(const count of [2,8,32,128,256,512,768,1024]){
   }
 }
 const best=curve.slice(1).reduce((a,b)=>b.rms<a.rms?b:a);
-assert.equal(best.count,1024);assert.ok(best.rms>0&&best.rms<.1);
-const report={source:data.source,license:data.license,sourceVertices:data.vertices,trainingSamples:samples.length,midpointValidationSamples:reference.length,normalization:'RMS reconstruction distance / mainland RMS radius about centroid × 100',search:{from:2,to:1024,step:1},minimum:best,comparisons,curve:curve.slice(1)};
+assert.equal(best.count,4095);assert.ok(best.rms>0&&best.rms<.001);
+const report={source:data.source,license:data.license,sourceVertices:data.vertices,trainingSamples:samples.length,midpointValidationSamples:reference.length,normalization:'RMS reconstruction distance / mainland RMS radius about centroid × 100',search:{from:2,to:4095,step:1},minimum:best,comparisons,curve:curve.slice(1)};
 fs.writeFileSync('rms-analysis.json',JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({checks:'passed',minimum:best,comparisons},null,2));
