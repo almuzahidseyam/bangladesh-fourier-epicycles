@@ -1,6 +1,6 @@
 # Bangladesh — A Fourier Portrait
 
-An interactive portrait of Bangladesh in **ivory, deep emerald, and bronze**, drawn with actual Fourier epicycles. The horizontal coordinate comes from the **X circles on the bottom axis**; the vertical coordinate comes from the **Y circles on the left axis**. Their projected endpoints meet on the map. The circles stay outside the map throughout their rotations.
+An interactive portrait of Bangladesh in **red, black, white, and purple**, drawn with actual Fourier epicycles. The horizontal coordinate comes from the **X circles on the bottom axis**; the vertical coordinate comes from the **Y circles on the left axis**. Their projected endpoints meet on the map. The circles stay outside the map throughout their rotations.
 
 **[Live demo](https://almuzahidseyam.github.io/bangladesh-fourier-epicycles/)** · **[RMS analysis](rms-analysis.json)**
 
@@ -10,7 +10,7 @@ An interactive portrait of Bangladesh in **ivory, deep emerald, and bronze**, dr
 
 - **N = 2–4095** harmonics per axis; default N=1024, with 128 / 1024 / 4095 presets.
 - Enter N directly and press **Apply** or **Enter**. Whole numbers and powers such as `2^10` are accepted. Invalid values show an explanation and leave the applied N unchanged.
-- A restrained emerald, moss, and bronze line follows the mainland border on warm ivory; coastal islands reveal themselves alongside it.
+- A red mainland border and purple coastal islands sit on white, with black editorial headers and purple controls.
 - X and Y epicycles occupy separate axes with a guaranteed gap from the map.
 - **Focus on map** enlarges the border without the circles. Switch back with **Show axes**.
 - Play / pause, restart, 0.25×–2× speed, and a timeline to inspect any position.
@@ -18,6 +18,7 @@ An interactive portrait of Bangladesh in **ivory, deep emerald, and bronze**, dr
 - A logarithmic RMS convergence chart and **Find minimum RMS** button.
 - High-resolution PNG export and fullscreen where supported.
 - Responsive layout, keyboard controls, and reduced-motion support.
+- A complete mathematics section: X/Y Fourier series, all four coefficient integrals, DC means, radius/phase identity, and live numerical equations.
 
 ## Run
 
@@ -42,6 +43,10 @@ f(t) = a₀ + Σ [aₖ cos(kt) + bₖ sin(kt)]
 An inverse FFT reconstructs **16,384 positions per cycle**, so high-frequency detail is retained in the rendered line. Tiny circles can fall below a screen pixel and are omitted visually; every selected coefficient still contributes to the position. Offshore islands are coloured reference outlines, not part of the mainland's Fourier error metric.
 
 `2^32` is **4,294,967,296 harmonics**, not 32. It is outside the available spectrum and is not practical to compute and animate in this browser app. A standard sampled real series with that many ordinary positive frequencies needs more than 8.59 billion samples. The input rejects this value explicitly instead of pretending to render it or silently substituting a smaller N.
+
+## Mathematics on the page
+
+The Math link opens native MathML equations for both coordinate series; the a/b and c/d coefficient integrals; a0/c0 averages; and the amplitude-phase identity with Rk = sqrt(ak² + bk²) and phi = atan2(bk, ak). Each X arm starts at -phi; the Y construction is rotated by pi/2 for vertical projection. The live examples show the first three selected terms using actual FFT coefficients and update with N. The N=150 button applies that value and displays the actual RMS for this boundary. Current t, x(t), and y(t) follow the drawing position.
 
 ## RMS study
 

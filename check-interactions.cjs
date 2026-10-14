@@ -22,6 +22,10 @@ function harness(reduced=false){
 }
 const h=harness();
 assert.equal(h.element('harmonic-value').textContent,1024);
+assert.match(h.element('math-state').textContent,/N = 1024/);
+assert.match(h.element('numeric-x').textContent,/x\(t\) ≈ .*cos\(t/);
+assert.match(h.element('numeric-y').textContent,/y\(t\) ≈ .*cos\(t/);
+assert.match(h.element('math-preview-note').textContent,/First 3 of 1024/);
 assert.equal(h.element('play-text').textContent,'Pause');h.advance(2);
 assert.ok(Number(h.element('timeline').value)>0);
 h.element('play').trigger('click');const paused=h.element('timeline').value;h.advance(3);assert.equal(h.element('timeline').value,paused);
@@ -30,6 +34,9 @@ h.element('preset-128').trigger('click');assert.equal(h.element('harmonic-value'
 for(const invalid of ['2^32','4294967296','1','0','2.5','-4','','word']){h.element('n-value').value=invalid;h.element('n-form').trigger('submit');assert.equal(h.element('harmonic-value').textContent,128);assert.equal(h.element('n-value').attributes['aria-invalid'],'true')}
 for(const [input,expected] of [['777',777],['2^11',2048],['4,095',4095]]){h.element('n-value').value=input;h.element('n-form').trigger('submit');assert.equal(h.element('harmonic-value').textContent,expected);assert.equal(h.element('n-error').hidden,true)}
 h.element('minimum').trigger('click');assert.equal(h.element('harmonic-value').textContent,4095);assert.ok(parseFloat(h.element('error-value').textContent)<.001);
+assert.match(h.element('math-state').textContent,/N = 4095/);
+h.element('math-example').trigger('click');assert.equal(h.element('harmonic-value').textContent,150);assert.match(h.element('math-state').textContent,/N = 150/);
+h.element('n-value').value='2';h.element('n-form').trigger('submit');assert.match(h.element('math-preview-note').textContent,/First 2 of 2/);assert.ok(!h.element('numeric-x').textContent.includes('…'));
 h.element('focus').trigger('click');assert.equal(h.element('circles').checked,false);assert.equal(h.element('focus').textContent,'Show axes ↙');
 h.element('focus').trigger('click');assert.equal(h.element('circles').checked,true);
 h.element('restart').trigger('click');assert.equal(h.element('completion-value').textContent,'0%');assert.equal(h.element('play-text').textContent,'Play','Restart preserves pause');
