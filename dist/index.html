@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1210">
+  <meta name="description" content="A mathematical portrait of Bangladesh. Watch rotating Fourier epicycles trace the outline of a homeland.">
+  <title>Bangladesh — A Fourier Portrait</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%23006348'/%3E%3Ccircle cx='29' cy='32' r='17' fill='%23f42a41'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script src="boundary.js" defer></script>
+  <script src="fourier.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="A Fourier Portrait home"><span class="brand-symbol" aria-hidden="true">∿</span> A FOURIER PORTRAIT</a>
+    <span class="edition">MATHEMATICAL STUDIES <span>/</span> 001</span>
+    <button class="icon-button" id="fullscreen" aria-label="Enter fullscreen" title="Fullscreen">⛶</button>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <div><p class="eyebrow"><span class="flag" aria-hidden="true"></span> A HOMELAND, IN HARMONICS</p><h1 id="title">Bangladesh<span class="title-dot">.</span></h1><p class="subtitle">Drawn with Fourier epicycles <span class="small-star">✳</span> <span lang="bn">বাংলাদেশ</span></p></div>
+      <p class="intro-note">A circle knows only how to turn.<br>Many circles remember a place.</p>
+    </section>
+    <section class="workspace" aria-label="Interactive Fourier drawing">
+      <div class="drawing-panel">
+        <div class="canvas-topline"><span><i class="status-dot"></i><span id="play-state">TRACING THE BORDER</span></span><button id="focus" class="focus-button" aria-pressed="false">Focus on map ↗</button><span id="cycle-label">CYCLE 01</span></div>
+        <div class="canvas-wrap"><canvas id="drawing" role="img" aria-label="Two chains of rotating circles reconstruct the X and Y coordinates of Bangladesh's outline.">An interactive Fourier drawing of Bangladesh. Use the controls to change the number of harmonics.</canvas></div>
+        <div class="canvas-bottomline"><span><span class="legend-dot mint"></span> Y · LEFT AXIS <span class="legend-dot gold"></span> X · BOTTOM AXIS</span><span class="canvas-caption">8,192 SAMPLES · FULL SPECTRUM</span></div>
+        <div class="progress-track" aria-hidden="true"><div id="progress-fill"></div></div>
+      </div>
+      <aside class="controls" aria-label="Drawing controls">
+        <div class="control-heading"><span class="eyebrow">THE COMPOSITION</span><span class="tiny-cross">+</span></div>
+        <div class="harmonic-display"><span id="harmonic-value">1024</span><span class="harmonic-unit">harmonics<br><span>per axis</span></span></div>
+        <label class="range-label" for="harmonics">Detail <span id="detail-label">Ultra detail</span></label>
+        <input type="range" id="harmonics" min="2" max="1024" value="1024" aria-describedby="harmonics-help">
+        <div class="range-ends"><span>2 · ABSTRACT</span><span>1024 · ULTRA</span></div>
+        <div class="presets" aria-label="Detail presets"><button data-harmonics="128">128</button><button data-harmonics="512">512</button><button data-harmonics="1024">1024</button></div>
+        <p class="control-hint" id="harmonics-help">More circles reveal finer coastal details.<br>Hide epicycles to enlarge the map.</p>
+        <div class="rms-study"><div class="range-label">RMS convergence <span>2 → 1024</span></div><svg id="rms-chart" viewBox="0 0 230 77" role="img" aria-label="Normalized RMS error decreases as harmonics increase from 2 to 1024; both axes are logarithmic."><path d="M8 7V68H222" fill="none" stroke="#344c3a"/><path id="rms-line" fill="none" stroke="#85e0d0" stroke-width="1.5"/><circle id="rms-marker" cx="8" cy="7" r="3.5" fill="#ffd587"/></svg><button id="minimum" class="minimum-button">Find minimum RMS <span>↘</span></button><p id="minimum-note" class="control-hint"></p></div>
+        <div class="divider"></div>
+        <label class="range-label" for="speed">Motion <output id="speed-value" for="speed">1×</output></label>
+        <input type="range" id="speed" min="0.25" max="2" step="0.25" value="1">
+        <div class="range-ends"><span>CONTEMPLATIVE</span><span>QUICK</span></div>
+        <label class="range-label timeline-label" for="timeline">Drawing position <span>Drag to explore</span></label><input type="range" id="timeline" min="0" max="100" step="0.1" value="0">
+        <div class="switches"><label class="switch-row" for="circles">Show epicycles <input type="checkbox" id="circles" checked><span class="switch" aria-hidden="true"></span></label><label class="switch-row" for="guide">Show border guide <input type="checkbox" id="guide" checked><span class="switch" aria-hidden="true"></span></label><label class="switch-row" for="progressive">Build detail each cycle <input type="checkbox" id="progressive"><span class="switch" aria-hidden="true"></span></label></div>
+        <div class="transport"><button class="play-button" id="play" aria-label="Pause animation"><span id="play-icon" aria-hidden="true">Ⅱ</span><span id="play-text">Pause</span></button><button class="restart-button" id="restart" aria-label="Restart drawing" title="Restart drawing">↺</button></div>
+        <button id="save" class="save-button"><span aria-hidden="true">↓</span> Save this moment <span>PNG</span></button>
+        <div class="metrics"><div><span id="error-value">—</span><small>MAINLAND RMS <button class="info-button" title="Reconstruction RMS normalized by the mainland's RMS radius. Computed across 8,192 samples using Parseval's theorem. Geographic accuracy and offshore islands are not part of this metric." aria-label="Normalized mainland reconstruction RMS across 8192 samples; islands are reference outlines.">ⓘ</button></small></div><div><span id="completion-value">0%</span><small>CYCLE DRAWN</small></div></div>
+      </aside>
+    </section>
+    <section class="story" aria-label="About this portrait"><p class="story-index">01 <span>/</span> THE IDEA</p><p class="story-text">Geometry in motion.<br><em>A place in memory.</em></p><div class="story-description"><p>Two families of spinning circles find a shared point. One gives its horizontal position; the other, its vertical. Together, they trace the shape of a homeland.</p><p class="formula" aria-label="f of t equals a zero plus the sum of a k cosine k t plus b k sine k t">f(t) = a₀ + ∑ [aₖ cos(kt) + bₖ sin(kt)]</p></div></section>
+  </main>
+  <footer><span>MADE OF CIRCLES. ROOTED IN BANGLADESH.</span><span>Boundary: <a href="https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-0-countries/" target="_blank" rel="noopener">Natural Earth 1:10m</a> · Artistic study</span><span class="keyboard-hint">SPACE TO PAUSE</span></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
